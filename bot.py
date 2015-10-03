@@ -16,7 +16,7 @@ import time
 import uuid
 import tempfile
 
-from optparse import OptionParser
+from argparse import ArgumentParser
 
 path0 = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.abspath(os.path.join(path0, 'util'))
@@ -240,7 +240,7 @@ def sendEmail(subject, body, receiver):
 
 
 def parseOpts():
-    parser = OptionParser()
+    parser = ArgumentParser()
     parser.set_defaults(
         remote_host = None,
         baseDir = os.path.expanduser("~") + localSep + "fuzzingjobs" + localSep,
@@ -255,43 +255,41 @@ def parseOpts():
         retestSkips = None
     )
 
-    parser.add_option('-t', '--test-type', dest='testType', choices=['auto', 'js', 'dom'],
-        help='Test type: "js", "dom", or "auto" (which is usually random).')
+    parser.add_argument('-t', '--test-type', dest='testType', choices=['auto', 'js', 'dom'],
+                        help='Test type: "js", "dom", or "auto" (which is usually random).')
 
-    parser.add_option("--build", dest="existingBuildDir",
-        help="Use an existing build directory.")
-    parser.add_option("--retest", dest="retestRoot",
-        help="Instead of fuzzing or reducing, take reduced testcases and retest them. Pass a directory such as ~/fuzzingjobs/ or an rsync'ed ~/fuzz-results/.")
-    parser.add_option("--retest-skips", dest="retestSkips",
-        help="File listing job names to skip when retesting.")
+    parser.add_argument("--build", dest="existingBuildDir",
+                        help="Use an existing build directory.")
+    parser.add_argument("--retest", dest="retestRoot",
+                        help="Instead of fuzzing or reducing, take reduced testcases and retest them. Pass a directory such as ~/fuzzingjobs/ or an rsync'ed ~/fuzz-results/.")
+    parser.add_argument("--retest-skips", dest="retestSkips",
+                        help="File listing job names to skip when retesting.")
 
-    parser.add_option('--repotype', dest='repoName',
-        help='Sets the repository to be fuzzed. Defaults to "%default".')
+    parser.add_argument('--repotype', dest='repoName',
+                        help='Sets the repository to be fuzzed. Defaults to "%(default)s".')
 
-    parser.add_option("--remote-host", dest="remote_host",
-        help="Use remote host to store fuzzing jobs; format: user@host. If omitted, a local directory will be used instead.")
-    parser.add_option("--basedir", dest="baseDir",
-        help="Base directory on remote machine to store fuzzing data")
-    parser.add_option("--target-time", dest="targetTime", type='int',
-        help="Nominal amount of time to run, in seconds")
+    parser.add_argument("--remote-host", dest="remote_host",
+                        help="Use remote host to store fuzzing jobs; format: user@host. If omitted, a local directory will be used instead.")
+    parser.add_argument("--basedir", dest="baseDir",
+                        help="Base directory on remote machine to store fuzzing data")
+    parser.add_argument("--target-time", dest="targetTime", type=int,
+                        help="Nominal amount of time to run, in seconds")
 
-    parser.add_option('-T', '--use-treeherder-builds', dest='useTreeherderBuilds', action='store_true',
-                      help='Download builds from treeherder instead of compiling our own.')
+    parser.add_argument('-T', '--use-treeherder-builds', dest='useTreeherderBuilds', action='store_true',
+                        help='Download builds from treeherder instead of compiling our own.')
 
     # Specify how the shell or browser will be built.
     # See js/buildOptions.py and dom/automation/buildBrowser.py for details.
-    parser.add_option('-b', '--build-options',
-                      dest='buildOptions',
-                      help='Specify build options, e.g. -b "-c opt --arch=32" for js (python buildOptions.py --help)')
+    parser.add_argument('-b', '--build-options',
+                        dest='buildOptions',
+                        help='Specify build options, e.g. -b "-c opt --arch=32" for js (python buildOptions.py --help)')
 
-    parser.add_option('--timeout', type='int', dest='timeout',
-                      help='Sets the timeout for loopjsfunfuzz.py. ' + \
-                           'Defaults to taking into account the speed of the computer and ' + \
-                           'debugger (if any).')
+    parser.add_argument('--timeout', type=int, dest='timeout',
+                        help='Sets the timeout for loopjsfunfuzz.py. ' + \
+                             'Defaults to taking into account the speed of the computer and ' + \
+                             'debugger (if any).')
 
-    options, args = parser.parse_args()
-    if len(args) > 0:
-        print "Warning: bot.py does not use positional arguments"
+    options = parser.parse_args()
 
     if options.testType == 'auto':
         if options.buildOptions is not None:
